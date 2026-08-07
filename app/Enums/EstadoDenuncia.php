@@ -71,11 +71,11 @@ enum EstadoDenuncia: string
     {
         return match ($this) {
             self::Nuevo => [self::Vista],
-            self::Vista => [self::EnProgreso, self::Cerrada],
+            self::Vista => [self::EnProgreso, self::Resuelta],
             self::EnProgreso => [self::Resuelta, self::Cerrada],
             self::Resuelta => [self::EnProgreso, self::Cerrada],
             self::Cerrada => [self::EnProgreso, self::Archivada],
-            self::Archivada => [],
+            self::Archivada => []
         };
     }
 

@@ -74,4 +74,8 @@ class RegistroAuditoria extends Model
     {
         throw new \LogicException('audit_logs es append-only: no se puede borrar un registro.');
     }
+    public function denunciaAfectada(): BelongsTo
+    {
+        return $this->belongsTo(Denuncia::class, 'affected_complaint_id');
+    }
 }

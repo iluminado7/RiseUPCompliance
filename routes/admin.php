@@ -1,12 +1,16 @@
 <?php
 
+use App\Http\Controllers\Admin\AccionDenunciaController;
 use App\Http\Controllers\Admin\Auth\DosFactoresController;
 use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\Auth\RecuperarPasswordController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DenunciaController;
+use App\Http\Controllers\Admin\DetalleDenunciaController;
+use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\NotificacionController;
 use App\Http\Controllers\Admin\PendienteController;
+use App\Http\Controllers\Admin\ReporteController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,12 +21,6 @@ use Illuminate\Support\Facades\Route;
 | Superficie autenticada. El canal publico va en routes/web.php y NO
 | comparte middleware con esto: son dos modelos de acceso opuestos y el
 | router es lo que garantiza estructuralmente que no se mezclen (2.1).
-|
-| El denunciante nunca pasa por aca.
-|
-| Las secciones todavia no portadas apuntan a PendienteController. Estan
-| declaradas desde ahora porque el sidebar las referencia, y una ruta
-| inexistente no rompe el enlace: rompe la pagina entera.
 |
 */
 
@@ -41,8 +39,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('password.restablecer')->middleware('throttle:10,1');
     });
 
-    // Desafio de 2FA: entre el primer factor y la sesion abierta. Sin
-    // 'auth' porque en ese intervalo todavia no hay sesion.
     Route::get('2fa', [DosFactoresController::class, 'mostrar'])->name('2fa.mostrar');
     Route::post('2fa', [DosFactoresController::class, 'verificar'])
         ->name('2fa.verificar')->middleware('throttle:10,1');
@@ -57,7 +53,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::get('/', DashboardController::class)->name('dashboard');
 
-        // -- Notificaciones (campana de la topbar) ---------------
         Route::prefix('notificaciones')->name('notificaciones.')->group(function () {
             Route::get('contar', [NotificacionController::class, 'contar'])->name('contar');
             Route::get('listar', [NotificacionController::class, 'listar'])->name('listar');
@@ -67,26 +62,30 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // -- Denuncias -------------------------------------------
         Route::get('denuncias', [DenunciaController::class, 'index'])->name('denuncias.index');
+        Route::get('denuncias/{denuncia}', [DetalleDenunciaController::class, 'show'])->name('denuncias.show');
 
-        // El detalle llega en el proximo bloque de esta etapa.
-        Route::get('denuncias/{denuncia}', fn () => app(PendienteController::class)('Detalle de denuncia'))
-            ->name('denuncias.show');
+        Route::prefix('denuncias/{denuncia}')->name('denuncias.')->group(function () {
+            Route::post('estado', [AccionDenunciaController::class, 'cambiarEstado'])->name('estado');
+            Route::post('prioridad', [AccionDenunciaController::class, 'cambiarPrioridad'])->name('prioridad');
+            Route::post('asignar', [AccionDenunciaController::class, 'asignar'])->name('asignar');
+            Route::post('mensaje', [AccionDenunciaController::class, 'enviarMensaje'])->name('mensaje');
 
-        // -- Reportes --------------------------------------------
-        Route::middleware('rol:superadmin,admin_principal')->group(function () {
-            Route::get('reportes', fn () => app(PendienteController::class)('Reportes'))
-                ->name('reportes.index');
+            Route::post('notas', [AccionDenunciaController::class, 'crearNota'])->name('notas.crear');
+            Route::put('notas/{nota}', [AccionDenunciaController::class, 'editarNota'])->name('notas.editar');
+            Route::delete('notas/{nota}', [AccionDenunciaController::class, 'eliminarNota'])->name('notas.eliminar');
         });
 
-        // -- Gestion: superadmin y admin_principal ---------------
+        // -- Superadmin y admin_principal ------------------------
         Route::middleware('rol:superadmin,admin_principal')->group(function () {
+            Route::get('reportes', [ReporteController::class, 'index'])->name('reportes.index');
+
             Route::get('administracion', fn () => app(PendienteController::class)('Administracion'))
                 ->name('administracion.index');
             Route::get('facturacion', fn () => app(PendienteController::class)('Facturacion'))
                 ->name('facturacion.index');
         });
 
-        // -- Gestion: solo superadmin ----------------------------
+        // -- Solo superadmin -------------------------------------
         Route::middleware('rol:superadmin')->group(function () {
             Route::get('onboarding', fn () => app(PendienteController::class)('Onboarding'))
                 ->name('onboarding.index');
@@ -96,8 +95,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 ->name('configuracion.index');
             Route::get('config-global', fn () => app(PendienteController::class)('Configuracion global'))
                 ->name('config-global.index');
-            Route::get('logs', fn () => app(PendienteController::class)('Logs de actividad'))
-                ->name('logs.index');
+
+            Route::get('logs', [LogController::class, 'index'])->name('logs.index');
         });
 
         // -- Comunes ---------------------------------------------
