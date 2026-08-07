@@ -20,7 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
                 '2fa' => \App\Http\Middleware\RequiereDosFactores::class,
                 'rol' => \App\Http\Middleware\RequiereRol::class,
             ]);
-        })
+            $middleware->redirectGuestsTo(fn () => route('admin.login'));
+             $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
+             })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
