@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 'usuario.operativo' => \App\Http\Middleware\UsuarioOperativo::class,
                 'empresa.operativa' => \App\Http\Middleware\EmpresaOperativa::class,
                 '2fa' => \App\Http\Middleware\RequiereDosFactores::class,
+                'password.cambio' => \App\Http\Middleware\RequiereCambioPassword::class,
                 'rol' => \App\Http\Middleware\RequiereRol::class,
             ]);
             $middleware->redirectGuestsTo(fn () => route('admin.login'));

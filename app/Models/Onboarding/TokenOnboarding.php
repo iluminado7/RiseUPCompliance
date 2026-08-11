@@ -22,7 +22,7 @@ class TokenOnboarding extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['token', 'created_by', 'expires_at', 'used_at', 'status'];
+    protected $fillable = ['token', 'created_by', 'expires_at', 'used_at','paso2_confirmado' ,'status'];
 
     protected $hidden = ['token'];
 
@@ -30,6 +30,7 @@ class TokenOnboarding extends Model
     {
         return [
             'expires_at' => 'datetime',
+            'paso2_confirmado' => 'boolean',
             'used_at' => 'datetime',
             'created_at' => 'datetime',
         ];

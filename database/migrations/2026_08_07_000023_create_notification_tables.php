@@ -19,7 +19,8 @@ return new class extends Migration
     {
         Schema::create('complaint_notifications', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('company_id');
+             $table->unsignedBigInteger('company_id')->nullable()
+                ->comment('Null para eventos de plataforma: onboarding_completed ocurre antes de que exista la empresa');
             $table->unsignedBigInteger('complaint_id');
             $table->enum('type', ['chat_enabled', 'status_updated', 'new_message']);
             $table->enum('channel', ['email', 'tracking_code']);

@@ -8,14 +8,11 @@
         <form method="GET" action="{{ route('admin.logs.index') }}" style="padding:16px 20px;">
             <div class="filters" style="margin-bottom:12px;">
 
-                <input type="text" name="empresa" list="dl-empresas"
-                       placeholder="Empresa..." value="{{ $filtros['empresa'] ?? '' }}"
-                       autocomplete="off">
-                <datalist id="dl-empresas">
-                    @foreach ($empresas as $nombre)
-                        <option value="{{ $nombre }}">
-                    @endforeach
-                </datalist>
+                <x-autocompletado
+                    nombre="empresa"
+                    :opciones="$empresas"
+                    :valor="$filtros['empresa'] ?? ''"
+                    placeholder="Empresa..." />
 
                 <input type="text" name="usuario" placeholder="Usuario o email..."
                        value="{{ $filtros['usuario'] ?? '' }}">

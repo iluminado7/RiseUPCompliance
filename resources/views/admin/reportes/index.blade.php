@@ -53,22 +53,18 @@
 
             <div class="filters" style="margin-bottom:12px;">
                 @if ($esSuperadmin)
-                    <input type="text" name="empresa" list="dl-empresas" autocomplete="off"
-                           placeholder="Todas las empresas" value="{{ $filtros['empresa'] ?? '' }}">
-                    <datalist id="dl-empresas">
-                        @foreach ($empresas as $nombre)
-                            <option value="{{ $nombre }}">
-                        @endforeach
-                    </datalist>
+                    <x-autocompletado
+                        nombre="empresa"
+                        :opciones="$empresas"
+                        :valor="$filtros['empresa'] ?? ''"
+                        placeholder="Todas las empresas" />
                 @endif
 
-                <input type="text" name="sucursal" list="dl-sucursales" autocomplete="off"
-                       placeholder="Todas las sucursales" value="{{ $filtros['sucursal'] ?? '' }}">
-                <datalist id="dl-sucursales">
-                    @foreach ($sucursales as $nombre)
-                        <option value="{{ $nombre }}">
-                    @endforeach
-                </datalist>
+                <x-autocompletado
+                    nombre="sucursal"
+                    :opciones="$sucursales"
+                    :valor="$filtros['sucursal'] ?? ''"
+                    placeholder="Todas las sucursales" />
 
                 <select name="fecha" id="filtro-fecha">
                     <option value="hoy" @selected(($filtros['fecha'] ?? '') === 'hoy')>Hoy</option>

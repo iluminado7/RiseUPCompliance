@@ -75,7 +75,7 @@ enum EstadoDenuncia: string
             self::EnProgreso => [self::Resuelta, self::Cerrada],
             self::Resuelta => [self::EnProgreso, self::Cerrada],
             self::Cerrada => [self::EnProgreso, self::Archivada],
-            self::Archivada => []
+            self::Archivada => [self::EnProgreso]
         };
     }
 

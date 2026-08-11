@@ -25,39 +25,23 @@
                        value="{{ $filtros['codigo'] ?? '' }}">
 
                 @if ($esSuperadmin)
-                    <div style="position:relative;">
-                        <input type="text" name="empresa" id="input-empresa"
-                               list="dl-empresas"
-                               placeholder="Buscar empresa..."
-                               value="{{ $filtros['empresa'] ?? '' }}"
-                               autocomplete="off"
-                               onchange="actualizarSucursales()">
-                        <datalist id="dl-empresas">
-                            @foreach ($empresas as $nombre)
-                                <option value="{{ $nombre }}">
-                            @endforeach
-                        </datalist>
-                    </div>
+                    <x-autocompletado
+                        nombre="empresa"
+                        :opciones="$empresas"
+                        :valor="$filtros['empresa'] ?? ''"
+                        placeholder="Buscar empresa..." />
                 @endif
 
                 @php
                     $sucursalBloqueada = $esSuperadmin && empty($filtros['empresa']);
                 @endphp
 
-                <div style="position:relative;">
-                    <input type="text" name="sucursal" id="input-sucursal"
-                           list="dl-sucursales"
-                           placeholder="{{ $sucursalBloqueada ? 'Seleccioná empresa primero' : 'Buscar sucursal...' }}"
-                           value="{{ $filtros['sucursal'] ?? '' }}"
-                           autocomplete="off"
-                           @disabled($sucursalBloqueada)
-                           @if ($sucursalBloqueada) style="opacity:.5;cursor:not-allowed;" @endif>
-                    <datalist id="dl-sucursales">
-                        @foreach ($sucursales as $nombre)
-                            <option value="{{ $nombre }}">
-                        @endforeach
-                    </datalist>
-                </div>
+                <x-autocompletado
+                    nombre="sucursal"
+                    :opciones="$sucursales"
+                    :valor="$filtros['sucursal'] ?? ''"
+                    :deshabilitado="$sucursalBloqueada"
+                    :placeholder="$sucursalBloqueada ? 'Elegí una empresa primero' : 'Buscar sucursal...'" />
 
                 <select name="estado">
                     <option value="">Todos los estados</option>
