@@ -64,6 +64,17 @@
 
         {{-- ══ PASO 1 — ANONIMATO ══ --}}
         @if ($paso === 1)
+            {{-- Sin esto, alguien que se equivocó de empresa en el buscador
+                 no tendría cómo darse cuenta hasta el resumen final, y para
+                 entonces ya cargó todo. --}}
+            <div class="cn-card" style="padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                <span style="font-size:14px;">
+                    <strong>{{ $empresa->name }}</strong>
+                </span>
+                <a href="{{ route('portada.selector') }}"
+                   style="font-size:13px;color:var(--gold-dark);">Cambiar empresa</a>
+            </div>
+
             <div class="cn-card">
                 <h2>¿Querés mantener el anonimato?</h2>
                 <p class="ayuda">

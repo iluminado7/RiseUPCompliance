@@ -60,7 +60,7 @@
                 <a href="{{ route('admin.onboarding.index') }}" class="btn btn-secondary btn-sm">Cerrar</a>
             </div>
 
-            <form method="POST" action="{{ route('admin.onboarding.confirmar', $revisar->id) }}"
+            <form method="POST" action="{{ route('admin.onboarding.confirmar', $revisar) }}"
                   style="padding:20px;">
                 @csrf
 
@@ -167,27 +167,10 @@
     <div class="card">
         <div class="card-header">
             <span class="card-title">Links de invitación</span>
-            @php
-                $descartables = $tokens->whereIn('situacion', ['vencido', 'revocado'])->count();
-            @endphp
-
-            <div style="display:flex;gap:8px;">
-                @if ($descartables)
-                    <form method="POST" action="{{ route('admin.onboarding.limpiar') }}"
-                          onsubmit="return confirm('Se van a eliminar {{ $descartables }} link(s) vencidos o revocados, junto con los datos que hayan cargado. No se puede deshacer.');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-secondary btn-sm">
-                            Limpiar vencidos ({{ $descartables }})
-                        </button>
-                    </form>
-                @endif
-
-                <form method="POST" action="{{ route('admin.onboarding.generar') }}">
-                    @csrf
-                    <button type="submit" class="btn btn-primary btn-sm">+ Generar link</button>
-                </form>
-            </div>
+            <form method="POST" action="{{ route('admin.onboarding.generar') }}">
+                @csrf
+                <button type="submit" class="btn btn-primary btn-sm">+ Generar link</button>
+            </form>
         </div>
 
         <div class="table-wrapper">
@@ -248,20 +231,10 @@
 
                                         @if (in_array($token->situacion, ['enviado', 'en_curso'], true))
                                             <form method="POST"
-                                                  action="{{ route('admin.onboarding.revocar', $token->id) }}"
+                                                  action="{{ route('admin.onboarding.revocar', $token) }}"
                                                   onsubmit="return confirm('¿Revocar este link? Deja de funcionar de inmediato.');">
                                                 @csrf
                                                 <button type="submit" class="btn btn-secondary btn-sm">Revocar</button>
-                                            </form>
-                                        @endif
-
-                                        @if (in_array($token->situacion, ['vencido', 'revocado', 'por_revisar'], true))
-                                            <form method="POST"
-                                                  action="{{ route('admin.onboarding.eliminar', $token->id) }}"
-                                                  onsubmit="return confirm('{{ $token->situacion === 'por_revisar' ? 'Se va a descartar el envío de ' . $token->empresa->name . ' con todos sus datos. La empresa NO se crea. No se puede deshacer.' : '¿Eliminar este link y todo lo que se haya cargado con él? No se puede deshacer.' }}');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-secondary btn-sm">Eliminar</button>
                                             </form>
                                         @endif
                                     </div>

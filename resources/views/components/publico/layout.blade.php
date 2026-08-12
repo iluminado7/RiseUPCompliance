@@ -22,7 +22,7 @@
         /* Franja oscura: el logo de GoHarv es blanco, así que necesita
            fondo negro para verse. */
         .cn-banner {
-            background:#111; color:#fff; text-align:center;
+            background: #0a0a0a; color:#fff; text-align:center;
             padding:14px 20px 13px;
         }
         .cn-marca { margin-bottom:9px; }
@@ -125,7 +125,7 @@
     {{ $slot }}
 
     <p class="cn-pie">
-        Canal confidencial ·
+        <a href="{{ route('portada.inicio') }}">Inicio</a> ·
         <a href="{{ route('seguimiento.formulario') }}">Consultar el estado de una denuncia</a>
     </p>
 </div>

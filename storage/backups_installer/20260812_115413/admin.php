@@ -22,8 +22,6 @@ use App\Http\Controllers\Admin\PerfilController;
 use App\Http\Controllers\Admin\CatalogoController;
 use App\Http\Controllers\Admin\ConfiguracionCanalController;
 use App\Http\Controllers\Admin\FacturacionController;
-use App\Http\Controllers\Admin\AyudaController;
-use App\Http\Controllers\Admin\ConfigGlobalController;
 /*
 |--------------------------------------------------------------------------
 | Panel de gestion
@@ -180,16 +178,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::post('{empresa}/legal',
                     [ConfiguracionCanalController::class, 'guardarLegal'])->name('legal');
             });
-            Route::prefix('config-global')->name('config-global.')->group(function () {
-                Route::get('/', [ConfigGlobalController::class, 'index'])->name('index');
-                Route::put('/', [ConfigGlobalController::class, 'guardar'])->name('guardar');
-            });
+            Route::get('config-global', fn () => app(PendienteController::class)('Configuracion global'))
+                ->name('config-global.index');
 
             Route::get('logs', [LogController::class, 'index'])->name('logs.index');
         });
 
         // -- Comunes ---------------------------------------------
-        Route::get('ayuda', AyudaController::class)->name('ayuda');
+        Route::get('ayuda', fn () => app(PendienteController::class)('Ayuda y soporte'))->name('ayuda');
 
 
         Route::get('perfil', [PerfilController::class, 'index'])->name('perfil');

@@ -22,8 +22,6 @@ use App\Http\Controllers\Admin\PerfilController;
 use App\Http\Controllers\Admin\CatalogoController;
 use App\Http\Controllers\Admin\ConfiguracionCanalController;
 use App\Http\Controllers\Admin\FacturacionController;
-use App\Http\Controllers\Admin\AyudaController;
-use App\Http\Controllers\Admin\ConfigGlobalController;
 /*
 |--------------------------------------------------------------------------
 | Panel de gestion
@@ -134,22 +132,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::prefix('onboarding')->name('onboarding.')->group(function () {
                 Route::get('/', [OnboardingController::class, 'index'])->name('index');
                 Route::post('generar', [OnboardingController::class, 'generar'])->name('generar');
-
-                // {token:id} y no {token}: getRouteKeyName() del modelo
-                // devuelve 'token', asi que el binding por defecto pone la
-                // credencial del formulario publico en la URL y en el HTML
-                // del listado.
-                Route::post('{token:id}/revocar', [OnboardingController::class, 'revocar'])
-                    ->name('revocar')->whereNumber('token');
-                Route::post('{token:id}/confirmar', [OnboardingController::class, 'confirmar'])
-                    ->name('confirmar')->whereNumber('token');
-
-                // 'limpiar' ANTES de '{token:id}': con whereNumber no
-                // colisionarian igual, pero no conviene depender de eso.
-                Route::delete('limpiar', [OnboardingController::class, 'limpiar'])
-                    ->name('limpiar');
-                Route::delete('{token:id}', [OnboardingController::class, 'eliminar'])
-                    ->name('eliminar')->whereNumber('token');
+                Route::post('{token}/revocar', [OnboardingController::class, 'revocar'])->name('revocar');
+                Route::post('{token}/confirmar', [OnboardingController::class, 'confirmar'])->name('confirmar');
             });
             Route::prefix('catalogo')->name('catalogo.')->group(function () {
                 Route::get('/', [CatalogoController::class, 'index'])->name('index');
@@ -180,16 +164,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::post('{empresa}/legal',
                     [ConfiguracionCanalController::class, 'guardarLegal'])->name('legal');
             });
-            Route::prefix('config-global')->name('config-global.')->group(function () {
-                Route::get('/', [ConfigGlobalController::class, 'index'])->name('index');
-                Route::put('/', [ConfigGlobalController::class, 'guardar'])->name('guardar');
-            });
+            Route::get('config-global', fn () => app(PendienteController::class)('Configuracion global'))
+                ->name('config-global.index');
 
             Route::get('logs', [LogController::class, 'index'])->name('logs.index');
         });
 
         // -- Comunes ---------------------------------------------
-        Route::get('ayuda', AyudaController::class)->name('ayuda');
+        Route::get('ayuda', fn () => app(PendienteController::class)('Ayuda y soporte'))->name('ayuda');
 
 
         Route::get('perfil', [PerfilController::class, 'index'])->name('perfil');

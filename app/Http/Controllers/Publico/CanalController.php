@@ -49,23 +49,20 @@ class CanalController extends Controller
     ) {}
 
     /**
-     * Pantalla de bienvenida.
+     * Entrada al canal de una empresa.
      *
-     * Es la primera pantalla del canal. Sin ella, quien abre el link cae
-     * directo en "¿querés mantener el anonimato?" sin ningún contexto, y
-     * esa es la decisión más importante de todo el formulario.
+     * Va directo al formulario. La presentación del sistema está en la
+     * portada de GoHarv; repetirla por empresa sería un paso más entre la
+     * decisión de denunciar y el formulario.
      *
-     * También es el único lugar donde el aviso de privacidad se puede leer
-     * ANTES de cargar nada.
+     * Se resuelve la empresa igual, para que un slug inexistente o de una
+     * empresa con el canal cerrado devuelva 404 acá y no en el paso 1.
      */
-    public function inicio(string $slug): View
+    public function inicio(string $slug): RedirectResponse
     {
-        $empresa = $this->resolverEmpresa($slug);
+        $this->resolverEmpresa($slug);
 
-        return view('publico.canal.bienvenida', [
-            'empresa' => $empresa,
-            'avisoPrivacidad' => $empresa->public_configuration['privacy_notice_text'] ?? null,
-        ]);
+        return redirect()->route('canal.paso', [$slug, 1]);
     }
 
     public function paso(Request $request, string $slug, int $paso): View|RedirectResponse

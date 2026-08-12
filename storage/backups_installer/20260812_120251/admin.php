@@ -22,7 +22,6 @@ use App\Http\Controllers\Admin\PerfilController;
 use App\Http\Controllers\Admin\CatalogoController;
 use App\Http\Controllers\Admin\ConfiguracionCanalController;
 use App\Http\Controllers\Admin\FacturacionController;
-use App\Http\Controllers\Admin\AyudaController;
 use App\Http\Controllers\Admin\ConfigGlobalController;
 /*
 |--------------------------------------------------------------------------
@@ -189,7 +188,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         });
 
         // -- Comunes ---------------------------------------------
-        Route::get('ayuda', AyudaController::class)->name('ayuda');
+        Route::get('ayuda', fn () => app(PendienteController::class)('Ayuda y soporte'))->name('ayuda');
 
 
         Route::get('perfil', [PerfilController::class, 'index'])->name('perfil');

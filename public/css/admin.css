@@ -28,8 +28,8 @@
     --new:         #dfdfdf;
     --seen:        #e7eef2;
     --in-progress: #fff3cd;
-    --resolved:    #d4edda;
-    --closed:      #d6d8db;
+    --resolved:    #8ee9a3;
+    --closed:      #a3cc8e;
     --archived:    #f8d7da;
 }
 
@@ -517,7 +517,7 @@ tbody tr:hover {
 .badge-in_progress{ background: var(--in-progress); color: #856404; }
 .badge-resolved   { background: var(--resolved);    color: #155724; }
 .badge-closed     { background: var(--closed);      color: #383d41; }
-.badge-archived   { background: var(--archived);    color: #721c24; }
+.badge-archived   { background: var(--archived);    color: #4a4443; }
 
 /* ── BOTONES ──────────────────────────────────────────────── */
 .btn {

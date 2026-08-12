@@ -86,7 +86,7 @@ class ServicioEmpresa
                 $fiscales
             );
 
-            $cambios = array_keys(array_diff_assoc($datos, $antes));
+            $cambios = $this->camposModificados($datos, $antes);
 
             $this->auditoria->registrar([
                 'company_id' => $empresa->id,
@@ -100,8 +100,46 @@ class ServicioEmpresa
                     . ($cambios ? implode(', ', $cambios) : 'solo datos fiscales'),
             ]);
         });
-    }
+        /**
+         * Compara los atributos enviados contra los previos y devuelve las
+         * claves que efectivamente cambiaron.
+         *
+         * No se usa array_diff_assoc: castea los valores a string, y $antes sale
+         * de Empresa::only(), que aplica los casts del modelo. Con status
+         * casteado a EstadoEmpresa eso lanza "Object of class App\Enums\
+         * EstadoEmpresa could not be converted to string". Ademas su comparacion
+         * laxa daria falsos negativos entre true/1 y null/''.
+         */
 
+        /**
+         * Lleva un atributo casteado a un escalar comparable con ===.
+         */
+
+    }
+        private function camposModificados(array $datos, array $antes): array
+        {
+            $cambios = [];
+
+            foreach ($datos as $campo => $valor) {
+                if ($this->normalizar($valor) !== $this->normalizar($antes[$campo] ?? null)) {
+                    $cambios[] = $campo;
+                }
+            }
+
+            return $cambios;
+        }
+
+        private function normalizar(mixed $valor): string|int|float|bool|null
+        {
+            return match (true) {
+                $valor instanceof \BackedEnum        => $valor->value,
+                $valor instanceof \UnitEnum          => $valor->name,
+                $valor instanceof \DateTimeInterface => $valor->format('Y-m-d H:i:s'),
+                is_array($valor)                     => json_encode($valor),
+                is_object($valor)                    => (string) $valor,
+                default                              => $valor,
+            };
+        }
     /**
      * Cambia el estado operativo.
      *

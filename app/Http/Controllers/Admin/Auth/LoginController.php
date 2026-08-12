@@ -152,7 +152,9 @@ class LoginController extends Controller
             'detail' => 'Login exitoso · rol: ' . $usuario->nombreRol()?->value,
         ]);
 
-        return redirect()->intended(route('admin.dashboard'));
+        $request->session()->forget('url.intended');
+
+        return redirect()->route('admin.dashboard');
     }
 
     public function salir(Request $request): RedirectResponse
