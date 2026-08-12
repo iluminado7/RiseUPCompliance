@@ -66,11 +66,14 @@ Con autenticación, 2FA opcional y aislamiento por empresa.
 /admin/denuncias       Bandeja y detalle
 /admin/reportes        Métricas
 /admin/administracion  Empresas, sucursales, usuarios
+/admin/onboarding      Links de invitación y revisión de altas
 /admin/catalogo        Catálogo global del sistema
 /admin/configuracion   Configuración del canal por empresa
+/admin/config-global   Valores por defecto del sistema
 /admin/facturacion     Facturas
 /admin/logs            Traza de auditoría
 /admin/perfil          Perfil propio
+/admin/ayuda           Documentación y preguntas frecuentes
 ```
 
 ---
@@ -316,6 +319,9 @@ app/
     Onboarding/     Modelos de las tablas espejo
   Policies/         Autorización por rol
   Services/         Lógica de dominio; los controladores solo orquestan
+  Support/          Catálogos declarados en código: CatalogoConfigGlobal
+                    (qué se puede configurar), CatalogoAyuda (contenido
+                    de la pantalla de ayuda)
   Http/
     Controllers/
       Admin/        Panel
@@ -336,9 +342,13 @@ controladores validan, delegan y redirigen.
 - Schema completo (42 tablas) con migraciones reconstruibles desde cero
 - Autenticación, 2FA real (TOTP), bloqueo por cuenta, recuperación
 - Panel: denuncias, reportes, logs, administración, catálogo,
-  configuración del canal, onboarding, facturación, perfil
+  configuración del canal, configuración global, onboarding, facturación,
+  perfil, ayuda
 - Canal público: formulario en 7 pasos, seguimiento, portada
 - Cadena de auditoría con verificación por comando
+
+**Todas las pantallas están portadas.** Lo que queda son integraciones y
+definiciones de negocio, no pantallas.
 
 ### Pendiente
 
@@ -351,17 +361,11 @@ controladores validan, delegan y redirigen.
 | Timestamping TSA de `audit_logs` | |
 | Captcha (Cloudflare Turnstile) | Componente reusable de Business Partner |
 | Exportación a PDF | Requiere mPDF |
-| Config. global y Ayuda | Pantallas sin portar |
+| Manuales PDF por rol | En preparación; van a `public/docs/` y el botón de Ayuda se habilita solo |
+| Casilla de soporte real | La pantalla de Ayuda todavía muestra `soporte@canaletico.com` |
+| Cifrado de claves secretas en `global_config` | Ninguna clave declarada lo es todavía; el servicio lanza excepción antes que guardar en claro |
+| Unificar retención onboarding (3660) vs alta manual (365) | Definición comercial |
 | Migración a AWS | |
-
-### Bug abierto
-
-**El dashboard devuelve 404 al entrar después del login.** Las rutas están
-bien registradas (`php artisan route:list --path=admin` las muestra
-todas), y el problema no era el `redirect()->intended()`. Sin diagnosticar.
-
-Para retomarlo hace falta: la URL exacta de la barra de direcciones cuando
-aparece el 404, y las últimas líneas de `storage/logs/laravel.log`.
 
 ---
 
@@ -391,6 +395,21 @@ false`). Solo las imágenes quedan disponibles, porque el reprocesamiento
 con GD destruye cualquier payload embebido: son seguras por construcción.
 Los otros formatos esperan al antivirus.
 
+**Cambiar un valor en Configuración global no afecta a ninguna empresa
+existente.** Son los defaults con los que se crean las nuevas. Reescribir
+la configuración de empresas ya operativas sería cambiarles las reglas sin
+avisarles.
+
+**Un alta de onboarding ya confirmada no se puede eliminar.** Sí los links
+vencidos, los revocados y los que estén por revisar. La fila de un alta
+confirmada es la constancia de por qué esa empresa existe en el sistema.
+
+**Cuatro respuestas del FAQ de Ayuda difieren del `ayuda.php` original.**
+Describían comportamiento que el port ya no tiene —volver a cualquier
+estado anterior, notificaciones por mail, notas internas visibles para
+todo el equipo—. Cada corrección está comentada en `CatalogoAyuda` con el
+motivo.
+
 ---
 
 ## Trampas conocidas
@@ -405,6 +424,36 @@ Blade pierde el cierre.
 **Rutas nuevas en `web.php` van ANTES del bloque `{slug}`.** Ese patrón
 matchea cualquier cosa, así que una ruta declarada después queda
 inalcanzable — y falla como "empresa inexistente", no con un error claro.
+Su primer segmento va además a la lista de exclusión del `where()`.
+
+**`->where()` va antes del `->group()`, y con array.** Dos errores
+distintos con la misma cara:
+
+```php
+->where(['slug' => '...'])->group(fn () => ...)   // correcto
+->group(fn () => ...)->where('slug', '...')       // se pierde en silencio
+->where('slug', '...')->group(fn () => ...)       // TypeError al arrancar
+```
+
+`RouteGroup::group()` registra las rutas y recién ahí devuelve `$this`, así
+que un `where()` posterior guarda la restricción en un registrar que ya no
+la va a aplicar: no falla, simplemente no hace nada. Y sobre un registrar
+la firma es el array asociativo; la de dos argumentos pasa por `__call`,
+que descarta el segundo y revienta con `array_merge(): Argument #2 must be
+of type array`.
+
+Esto costó una sesión entera: `{slug}` quedaba sin patrón, matcheaba
+`admin`, y `/admin` devolvía 404 tomado por el canal público mientras
+`route:list` mostraba todas las rutas del panel correctamente registradas.
+La forma de dos argumentos sí es la válida sobre una ruta suelta
+(`Route::get(...)->where('paso', '[1-7]')`).
+
+**No usar `array_diff_assoc` sobre atributos de Eloquent.** Castea los
+valores a string, y con un atributo casteado a enum lanza `Object of class
+... could not be converted to string`. Pasa incluso cuando el enum sale de
+`$modelo->only()`, que aplica los casts. Su comparación laxa además da
+falsos negativos entre `true` y `1`. Comparar con `!==` normalizando antes
+(`ServicioEmpresa::camposModificados()` es el patrón).
 
 **Los subrayados rojos de VS Code en `auth()->id()` son falsos
 positivos.** `auth()` devuelve una interfaz que no declara `id()`. En
